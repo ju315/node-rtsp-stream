@@ -38,7 +38,8 @@ VideoStream.prototype.startMpeg1Stream = function() {
   this.mpeg1Muxer = new Mpeg1Muxer({
     ffmpegOptions: this.options.ffmpegOptions,
     url: this.streamUrl,
-    ffmpegPath: this.options.ffmpegPath == undefined ? "ffmpeg" : this.options.ffmpegPath
+    ffmpegPath: this.options.ffmpegPath == undefined ? "ffmpeg" : this.options.ffmpegPath,
+    useTcp: this.options.useTcp,
   })
   this.stream = this.mpeg1Muxer.stream
   if (this.inputStreamStarted) {
@@ -88,27 +89,32 @@ VideoStream.prototype.startMpeg1Stream = function() {
 }
 
 VideoStream.prototype.pipeStreamToSocketServer = function() {
-  this.wsServer = new ws.Server({
-    port: this.wsPort
-  })
-  this.wsServer.on("connection", (socket, request) => {
-    return this.onSocketConnect(socket, request)
-  })
-  this.wsServer.broadcast = function(data, opts) {
-    var results
-    results = []
-    for (let client of this.clients) {
-      if (client.readyState === 1) {
-        results.push(client.send(data, opts))
-      } else {
-        results.push(console.log("Error: Client from remoteAddress " + client.remoteAddress + " not connected."))
+  try {
+    this.wsServer = new ws.Server({
+      port: this.wsPort
+    })
+    this.wsServer.on("connection", (socket, request) => {
+      return this.onSocketConnect(socket, request)
+    })
+    this.wsServer.broadcast = function(data, opts) {
+      var results
+      results = []
+      for (let client of this.clients) {
+        if (client.readyState === 1) {
+          results.push(client.send(data, opts))
+        } else {
+          results.push(console.log("Error: Client from remoteAddress " + client.remoteAddress + " not connected."))
+        }
       }
+      return results
     }
-    return results
+    return this.on('camdata', (data) => {
+      return this.wsServer.broadcast(data)
+    })
+  } catch (err) {
+    console.log('something went wrong...');
+    console.log(err);
   }
-  return this.on('camdata', (data) => {
-    return this.wsServer.broadcast(data)
-  })
 }
 
 VideoStream.prototype.onSocketConnect = function(socket, request) {

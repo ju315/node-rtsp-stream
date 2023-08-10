@@ -9,6 +9,7 @@ events = require('events')
 Mpeg1Muxer = function(options) {
   var key
   this.url = options.url
+  this.useTcp = options.useTcp
   this.ffmpegOptions = options.ffmpegOptions
   this.exitCode = undefined
   this.additionalFlags = []
@@ -21,18 +22,33 @@ Mpeg1Muxer = function(options) {
     }
   }
   this.spawnOptions = [
-    "-rtsp_transport",
-    "tcp",
-    "-i",
+    // "-i",
+    // this.url,
+    // '-f',
+    // 'mpegts',
+    // '-codec:v',
+    // 'mpeg1video',
+    // // additional ffmpeg options go here
+    // ...this.additionalFlags,
+
+    // "-rtsp_transport", "tcp", "-i",
     this.url,
     '-f',
-    'mpegts',
-    '-codec:v',
     'mpeg1video',
+    '-b:v', '1000k',
+    '-maxrate', '1000k',
+    '-bufsize', '1000k',
+    '-an', '-r', '24',
     // additional ffmpeg options go here
     ...this.additionalFlags,
     '-'
-  ]
+  ];
+  if (this.useTcp) {
+    this.spawnOptions.unshift(...['-rtsp_transport', 'tcp', '-i']);
+  }
+  else {
+    this.spawnOptions.unshift('-i');
+  }
   this.stream = child_process.spawn(options.ffmpegPath, this.spawnOptions, {
     detached: false
   })
