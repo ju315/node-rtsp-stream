@@ -33,6 +33,11 @@ VideoStream.prototype.stop = function() {
   return this
 }
 
+VideoStream.prototype.restart = function() {
+  this.startMpeg1Stream();
+  this.pipeStreamToSocketServer();
+}
+
 VideoStream.prototype.startMpeg1Stream = function() {
   var gettingInputData, gettingOutputData, inputData, outputData
   this.mpeg1Muxer = new Mpeg1Muxer({
