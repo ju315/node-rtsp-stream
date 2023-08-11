@@ -38,6 +38,10 @@ VideoStream.prototype.restart = function() {
   this.pipeStreamToSocketServer();
 }
 
+VideoStream.prototype.getClientCount = function() {
+  return this.wsServer.clients.size
+}
+
 VideoStream.prototype.startMpeg1Stream = function() {
   var gettingInputData, gettingOutputData, inputData, outputData
   this.mpeg1Muxer = new Mpeg1Muxer({
