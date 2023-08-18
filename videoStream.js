@@ -140,10 +140,12 @@ VideoStream.prototype.onSocketConnect = function(socket, request) {
     binary: true
   })
   console.log(`${this.name}: New WebSocket Connection (` + this.wsServer.clients.size + " total)")
+  global.Logger && global.Logger.info(`${this.name}: New WebSocket Connection. (${this.wsServer.clients.size} total)`)
 
   socket.remoteAddress = request.connection.remoteAddress
 
   return socket.on("close", (code, message) => {
+    global.Logger && global.Logger.info(`${this.name}: Disconnected WebSocket. (${this.wsServer.clients.size} total)`)
     return console.log(`${this.name}: Disconnected WebSocket (` + this.wsServer.clients.size + " total)")
   })
 }
