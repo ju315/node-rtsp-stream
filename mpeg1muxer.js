@@ -23,8 +23,6 @@ Mpeg1Muxer = function(options) {
   }
   this.spawnOptions = [
     this.url,
-    '-f',
-    'mpeg1video',
     '-b:v', '1000k',
     '-maxrate', '1000k',
     '-bufsize', '1000k',
