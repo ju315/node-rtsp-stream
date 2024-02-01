@@ -146,7 +146,7 @@ VideoStream.prototype.onSocketConnect = function(socket, request) {
 
   return socket.on("close", (code, message) => {
     global.Logger && global.Logger.info(`node-rtsp-stream:: ${this.name}: Disconnected WebSocket. (${this.wsServer.clients.size} total. (code: ${code}, message: ${message}))`)
-    return console.log(`${this.name}: Disconnected WebSocket (` + this.wsServer.clients.size + " total)")
+    return console.log(`${this.name}: Disconnected WebSocket (${this.wsServer.clients.size} total)`);
   })
 }
 
