@@ -48,14 +48,23 @@ Mpeg1Muxer = function(options) {
     return this.emit('ffmpegStderr', data)
   })
   this.stream.on('exit', (code, signal) => {
+    global.Logger.info(`node-rtsp-stream:: ffmpeg Stream on Exit Code. (code: ${code}, signal: ${signal})`);
     if (code === 1) {
-      console.error('RTSP stream exited with error')
       global.Logger && global.Logger.error('node-rtsp-stream:: RTSP stream exited with error')
       this.exitCode = 1
       return this.emit('exitWithError')
     }
+
+    if (signal === 'SIGTERM') {
+      return this.emit('exitWithError');
+    }
   })
   return this
+}
+
+Mpeg1Muxer.prototype.close = function() {
+  this.stream.kill();
+  this.inputStreamStarted = false;
 }
 
 util.inherits(Mpeg1Muxer, events.EventEmitter)
