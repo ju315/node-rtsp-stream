@@ -21,7 +21,7 @@ VideoStream = function(options) {
   this.inputStreamStarted = false;
   this.stream = undefined;
   this.wsClient = [];
-  this.maxTimeGap = 30000;
+  this.maxTimeGap = options.maxTimeGap || 30000;
   this.startMpeg1Stream();
   this.pipeStreamToSocketServer();
   return this
