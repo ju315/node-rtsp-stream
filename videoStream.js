@@ -32,7 +32,7 @@ VideoStream = function(options) {
 util.inherits(VideoStream, events.EventEmitter)
 
 VideoStream.prototype.stop = function() {
-  global.Logger.error(`node-rtsp-stream::  Stop VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  global.Logger.error(`node-rtsp-stream:: Stop VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
   if (this.wsClient.length) {
     for (const client of this.wsClient) {
       client.send('socket will be closed');
@@ -120,7 +120,7 @@ VideoStream.prototype.startMpeg1Stream = function() {
   });
 
   this.mpeg1Muxer.on('exitWithError', () => {
-    global.Logger.error(`${this.name} ffmpeg get exitWithError.`);
+    global.Logger.error(`node-rtsp-stream:: ${this.name} ffmpeg get exitWithError.`);
 
     return this.emit('exitWithError');
   });
@@ -190,7 +190,7 @@ VideoStream.prototype.onSocketConnect = function(socket, request) {
   socket.remoteAddress = request.connection.remoteAddress;
 
   return socket.on("close", (code, message) => {
-    global.Logger && global.Logger.info(`node-rtsp-stream:: ${this.name}: Disconnected WebSocket. (clientIp: ${clientIp}, code: ${code}, message: ${message}, total, ${this.wsServer.clients.size})`);
+    global.Logger && global.Logger.info(`node-rtsp-stream:: ${this.name}: Disconnected WebSocket. (clientIp: ${clientIp}, code: ${code}, message: ${message}, total: ${this.wsServer.clients.size})`);
     return console.log(`${this.name}: Disconnected WebSocket (${this.wsServer.clients.size} total)`);
   })
 }
