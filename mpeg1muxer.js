@@ -43,7 +43,6 @@ const Mpeg1Muxer = function(options) {
     detached: false
   });
 
-  this.stream.stdin.write('?');
   this.inputStreamStarted = true;
 
   this.stream.stdout.on('data', (data) => {
