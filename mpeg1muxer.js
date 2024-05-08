@@ -9,6 +9,7 @@ const Mpeg1Muxer = function(options) {
   this.name = options.name;
   this.exitCode = undefined;
   this.additionalFlags = [];
+  this.logger = options.logger;
 
   if (this.ffmpegOptions) {
     for (const key in this.ffmpegOptions) {
@@ -52,7 +53,8 @@ const Mpeg1Muxer = function(options) {
   });
 
   this.inputStreamStarted = true;
-  global.Logger.debug(`node-rtsp-stream(${this.name}):: ffmpeg stream start command ${JSON.stringify(this.spawnOptions)}`);
+  global.Logger && global.Logger.debug(`node-rtsp-stream(${this.name}):: ffmpeg stream start command ${JSON.stringify(this.spawnOptions)}`);
+  this.logger && this.logger.debug(`node-rtsp-stream(${this.name}):: ffmpeg stream start command ${JSON.stringify(this.spawnOptions)}`);
 
   this.stream.stdout.on('data', (data) => {
     return this.emit('mpeg1data', data);
@@ -63,9 +65,13 @@ const Mpeg1Muxer = function(options) {
   });
 
   this.stream.on('exit', (code, signal) => {
-    global.Logger.error(`node-rtsp-stream(${this.name}):: ffmpeg Stream on Exit Code. (code: ${code}, signal: ${signal})`);
+    global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: ffmpeg Stream on Exit Code. (code: ${code}, signal: ${signal})`);
+    this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: ffmpeg Stream on Exit Code. (code: ${code}, signal: ${signal})`);
+
     if (code === 1) {
-      global.Logger.error(`node-rtsp-stream(${this.name}):: RTSP stream exited with error`)
+      global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: RTSP stream exited with error`)
+      this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: RTSP stream exited with error`)
+
       this.exitCode = 1
       return this.emit('exitWithError');
     }
@@ -83,7 +89,9 @@ Mpeg1Muxer.prototype.close = function() {
   this.stream.kill();
   delete this.stream;
   this.inputStreamStarted = false;
-  global.Logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
+
+  global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
+  this.logger && this.logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
 }
 
 util.inherits(Mpeg1Muxer, events.EventEmitter)

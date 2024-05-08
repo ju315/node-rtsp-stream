@@ -17,8 +17,11 @@ const VideoStream = function(options) {
   this.wsClient = [];
   this.ffmpegTimer = null;
   this.maxTimeGap = options.maxTimeGap || 30000;
+  this.logger = options.logger || null;
 
-  global.Logger.info(`node-rtsp-stream(${this.name}):: Init VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: Init VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: Init VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`)
+
   this.startMpeg1Stream();
   this.pipeStreamToSocketServer();
   return this
@@ -27,7 +30,9 @@ const VideoStream = function(options) {
 util.inherits(VideoStream, events.EventEmitter)
 
 VideoStream.prototype.stop = function() {
-  global.Logger.error(`node-rtsp-stream(${this.name}):: Stop VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: Stop VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: Stop VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+
   if (this.wsClient.length) {
     for (const client of this.wsClient) {
       client.send('socket will be closed');
@@ -42,7 +47,9 @@ VideoStream.prototype.stop = function() {
 }
 
 VideoStream.prototype.restart = function() {
-  global.Logger.info(`node-rtsp-stream(${this.name}):: Restart VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: Restart VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+  this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: Restart VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
+
   this.startMpeg1Stream();
 }
 
@@ -59,6 +66,7 @@ VideoStream.prototype.startMpeg1Stream = function() {
     ffmpegPath: this.options.ffmpegPath == undefined ? "ffmpeg" : this.options.ffmpegPath,
     useTcp: this.options.useTcp,
     name: this.name,
+    logger: this.logger,
   });
 
   this.stream = this.mpeg1Muxer.stream;
@@ -122,12 +130,16 @@ VideoStream.prototype.startMpeg1Stream = function() {
     }
 
     process.env.NODE_ENV && global.process.stderr.write(data);
-    global.Logger.debug(`node-rtsp-stream(${this.name}):: ${msg}`)
+    global.Logger && global.Logger.debug(`node-rtsp-stream(${this.name}):: ${msg}`)
+    this.logger && this.logger.debug(`node-rtsp-stream(${this.name}):: ${msg}`)
+
     return;
   });
 
   this.mpeg1Muxer.on('exitWithError', () => {
-    global.Logger.error(`node-rtsp-stream(${this.name}):: ${this.name} ffmpeg get exitWithError.`);
+    global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: ${this.name} ffmpeg get exitWithError.`);
+    this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: ${this.name} ffmpeg get exitWithError.`);
+
     clearInterval(this.ffmpegTimer);
 
     return this.emit('exitWithError');
@@ -138,7 +150,8 @@ VideoStream.prototype.startMpeg1Stream = function() {
 
     if (nowUtc < lastUtc + this.maxTimeGap) return;
 
-    global.Logger.error(`node-rtsp-stream(${this.name}):: The stream is terminated because no stream data has been received for a certain period of time. (name: ${this.name}, ms: ${this.maxTimeGap})`);
+    global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: The stream is terminated because no stream data has been received for a certain period of time. (name: ${this.name}, ms: ${this.maxTimeGap})`);
+    this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: The stream is terminated because no stream data has been received for a certain period of time. (name: ${this.name}, ms: ${this.maxTimeGap})`);
 
     clearInterval(this.ffmpegTimer);
     this.stop();
@@ -165,7 +178,9 @@ VideoStream.prototype.pipeStreamToSocketServer = function() {
         if (client.readyState === 1) {
           results.push(client.send(data, opts));
         } else {
-          global.Logger.error(`node-rtsp-stream(${this.name}):: Error. Client from remoteAddress ${client.remoteAddress} not connected.`);
+          global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: Error. Client from remoteAddress ${client.remoteAddress} not connected.`);
+          this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: Error. Client from remoteAddress ${client.remoteAddress} not connected.`);
+
           results.push(console.log("Error: Client from remoteAddress " + client.remoteAddress + " not connected."))
         }
       }
@@ -176,7 +191,9 @@ VideoStream.prototype.pipeStreamToSocketServer = function() {
       return this.wsServer.broadcast(data)
     });
   } catch (err) {
-    global.Logger.error(`node-rtsp-stream(${this.name}):: ${this.name} broadcast Socket something went wrong.(err: ${err.message})`);
+    global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: ${this.name} broadcast Socket something went wrong.(err: ${err.message})`);
+    this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: ${this.name} broadcast Socket something went wrong.(err: ${err.message})`);
+
     console.log('something went wrong...');
     console.log(err);
   }
@@ -194,12 +211,15 @@ VideoStream.prototype.onSocketConnect = function(socket, request) {
   });
 
   const clientIp = request.headers["x-forwarded-for"] || request.connection.remoteAddress;
-  global.Logger.info(`node-rtsp-stream(${this.name}):: ${this.name}: New WebSocket Connection. (clientIp: ${clientIp}, total: ${this.wsServer.clients.size})`);
+  global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: ${this.name}: New WebSocket Connection. (clientIp: ${clientIp}, total: ${this.wsServer.clients.size})`);
+  this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: ${this.name}: New WebSocket Connection. (clientIp: ${clientIp}, total: ${this.wsServer.clients.size})`);
 
   socket.remoteAddress = request.connection.remoteAddress;
 
   return socket.on("close", (code, message) => {
-    global.Logger.info(`node-rtsp-stream(${this.name}):: ${this.name}: Disconnected WebSocket. (clientIp: ${clientIp}, code: ${code}, message: ${message || null}, total: ${this.wsServer.clients.size})`);
+    global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: ${this.name}: Disconnected WebSocket. (clientIp: ${clientIp}, code: ${code}, message: ${message || null}, total: ${this.wsServer.clients.size})`);
+    this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: ${this.name}: Disconnected WebSocket. (clientIp: ${clientIp}, code: ${code}, message: ${message || null}, total: ${this.wsServer.clients.size})`);
+
     return;
   })
 }
