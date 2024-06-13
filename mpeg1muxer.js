@@ -90,7 +90,7 @@ Mpeg1Muxer.prototype.close = function() {
   this.inputStreamStarted = false;
 
   global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
-  this.logger && this.logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
+  this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
 }
 
 util.inherits(Mpeg1Muxer, events.EventEmitter)
