@@ -4,7 +4,7 @@ const events = require('events')
 
 const Mpeg1Muxer = function(options) {
   this.url = options.url;
-  this.useTcp = options.useTcp;
+  this.useUdp = options.useUdp;
   this.ffmpegOptions = options.ffmpegOptions;
   this.name = options.name;
   this.exitCode = undefined;
@@ -41,11 +41,10 @@ const Mpeg1Muxer = function(options) {
     '-'
   ];
 
-  if (this.useTcp) {
-    this.spawnOptions.unshift(...['-rtsp_transport', 'tcp', '-i']);
-  }
-  else {
+  if (this.useUdp) {
     this.spawnOptions.unshift('-i');
+  } else {
+    this.spawnOptions.unshift(...['-rtsp_transport', 'tcp', '-i']);
   }
 
   this.stream = child_process.spawn(options.ffmpegPath, this.spawnOptions, {
@@ -91,7 +90,7 @@ Mpeg1Muxer.prototype.close = function() {
   this.inputStreamStarted = false;
 
   global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
-  this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
+  this.logger && this.logger.info(`node-rtsp-stream(${this.name}):: ffmpeg RTSP stream has stopped and destroyed.`);
 }
 
 util.inherits(Mpeg1Muxer, events.EventEmitter)

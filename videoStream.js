@@ -64,7 +64,7 @@ VideoStream.prototype.startMpeg1Stream = function() {
     ffmpegOptions: this.options.ffmpegOptions,
     url: this.streamUrl,
     ffmpegPath: this.options.ffmpegPath == undefined ? "ffmpeg" : this.options.ffmpegPath,
-    useTcp: this.options.useTcp,
+    useUdp: this.options.useUdp,
     name: this.name,
     logger: this.logger,
   });
