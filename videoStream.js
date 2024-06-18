@@ -130,6 +130,8 @@ VideoStream.prototype.startMpeg1Stream = function() {
     }
 
     process.env.NODE_ENV && global.process.stderr.write(data);
+    if (msg.includes('Past duration')) return;
+
     global.Logger && global.Logger.debug(`node-rtsp-stream(${this.name}):: ${msg}`)
     this.logger && this.logger.debug(`node-rtsp-stream(${this.name}):: ${msg}`)
 
@@ -202,6 +204,17 @@ VideoStream.prototype.pipeStreamToSocketServer = function() {
 VideoStream.prototype.onSocketConnect = function(socket, request) {
   // Send magic bytes and video size to the newly connected socket
   // struct { char magic[4]; unsigned short width, height;}
+  if (!this.width || !this.height) {
+    // width, height는 stream 정보에서 받아오고 있음.
+    // 아직 width, height값이 정의되지 않으면 stream이 생성되지 않았으므로 socket 종료.
+    global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: Stream information for ffmpeg has not been created yet. Send socket close signal.`);
+    this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: Stream information for ffmpeg has not been created yet. Send socket close signal.`)
+
+    socket.send('socket will be closed');
+    socket.close();
+    return;
+  }
+
   const streamHeader = Buffer.alloc(8);
   streamHeader.write(STREAM_MAGIC_BYTES);
   streamHeader.writeUInt16BE(this.width, 4);
