@@ -19,6 +19,11 @@ const VideoStream = function(options) {
   this.maxTimeGap = options.maxTimeGap || 30000;
   this.logger = options.logger || null;
 
+  /**
+   * logger 정보.
+   * this.logger: NestJS의 logger 객체
+   * global.Logger: express의 global logger 객체
+  */
   global.Logger && global.Logger.info(`node-rtsp-stream(${this.name}):: Init VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`);
   this.logger && this.logger.log(`node-rtsp-stream(${this.name}):: Init VideoStream. (name: ${this.name}, streamUrl: ${this.streamUrl}, ws: ${this.wsHost}:${this.wsPort})`)
 
