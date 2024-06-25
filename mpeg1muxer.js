@@ -67,7 +67,7 @@ const Mpeg1Muxer = function(options) {
     global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: ffmpeg Stream on Exit Code. (code: ${code}, signal: ${signal})`);
     this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: ffmpeg Stream on Exit Code. (code: ${code}, signal: ${signal})`);
 
-    if (code === 1) {
+    if (code === 0 || code === 1) {
       global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: RTSP stream exited with error`)
       this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: RTSP stream exited with error`)
 
