@@ -238,7 +238,6 @@ VideoStream.prototype.onSocketConnect = function(socket, request) {
     global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: The stream size of the ip camera is larger than FHD. Send socket close signal. (height: ${this.height}, width: ${this.width})`);
     this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: The stream size of the ip camera is larger than FHD. Send socket close signal. (height: ${this.height}, width: ${this.width})`)
 
-    socket.send(`The stream size of the ip camera is larger than FHD. Closed socket. (height: ${this.height}, width: ${this.width})`);
     socket.send(JSON.stringify({
       message: `The stream size of the ip camera is larger than FHD. Closed socket. (height: ${this.height}, width: ${this.width})`,
       height: this.height,
