@@ -4,6 +4,9 @@ const events = require('events')
 const Mpeg1Muxer = require('./mpeg1muxer')
 const STREAM_MAGIC_BYTES = "jsmp" // Must be 4 bytes
 
+const FHD_HEIGHT = 1080;
+const FHD_WIDTH = 1920;
+
 const VideoStream = function(options) {
   this.options = options;
   this.name = options.name;
@@ -120,8 +123,18 @@ VideoStream.prototype.startMpeg1Stream = function() {
           this.width = parseInt(size[0], 10);
         }
         if (this.height == null) {
-          return this.height = parseInt(size[1], 10);
+          this.height = parseInt(size[1], 10);
         }
+
+        if (this.width > FHD_WIDTH || this.height > FHD_HEIGHT) {
+          global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: The stream size of the ip camera is larger than FHD. (height: ${this.height}, width: ${this.width})`)
+          this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: The stream size of the ip camera is larger than FHD. (height: ${this.height}, width: ${this.width})`)
+
+          this.stop();
+          return;
+        }
+
+        return;
       }
     }
   });
@@ -216,6 +229,22 @@ VideoStream.prototype.onSocketConnect = function(socket, request) {
     this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: Stream information for ffmpeg has not been created yet. Send socket close signal.`)
 
     socket.send('socket will be closed');
+    socket.close();
+    return;
+  }
+
+  if (this.height > FHD_HEIGHT || this.width > FHD_WIDTH) {
+    // Stream의 height, width값이 FHD보다 클경우 스트림 종료.
+    global.Logger && global.Logger.error(`node-rtsp-stream(${this.name}):: The stream size of the ip camera is larger than FHD. Send socket close signal. (height: ${this.height}, width: ${this.width})`);
+    this.logger && this.logger.error(`node-rtsp-stream(${this.name}):: The stream size of the ip camera is larger than FHD. Send socket close signal. (height: ${this.height}, width: ${this.width})`)
+
+    socket.send(`The stream size of the ip camera is larger than FHD. Closed socket. (height: ${this.height}, width: ${this.width})`);
+    socket.send(JSON.stringify({
+      message: `The stream size of the ip camera is larger than FHD. Closed socket. (height: ${this.height}, width: ${this.width})`,
+      height: this.height,
+      width: this.width,
+    }));
+
     socket.close();
     return;
   }
